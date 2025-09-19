@@ -89,10 +89,9 @@ Clears the extension's memory of your current positions. Use this if:
 ## 🛠️ Troubleshooting
 
 ### No Notifications Appearing
-1. **Check TradingView**: Ensure you're on `*.tradingview.com`
-2. **Verify Webhook**: Use the **🧪 Test** button to confirm Discord connection
-3. **Check Settings**: Ensure **🔔 Discord Notifications** is enabled
-4. **Reload Page**: Refresh TradingView after changing settings
+1. **Verify Webhook**: Use the **🧪 Test** button to confirm Discord connection
+2. **Check Settings**: Ensure **🔔 Discord Notifications** is enabled
+3. **Reload Page**: Refresh TradingView after changing settings
 
 ### Screenshots Not Working
 1. **Active Tab**: TradingView must be the active browser tab
