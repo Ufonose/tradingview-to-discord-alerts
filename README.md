@@ -23,7 +23,7 @@ Automatically send your TradingView trade executions directly to Discord with op
    - **Chrome**: `chrome://extensions/`
    - **Brave**: `brave://extensions/`
 3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked" and select the **extracted folder containing the files** (not the ZIP file)
+4. Click "Load unpacked" and select the **extracted folder containing the files**
 5. The extension should be added to your browser's extension list
 6. **📌 Recommended**: Pin the extension to your toolbar for easy access to settings
 
