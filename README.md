@@ -45,7 +45,7 @@ Automatically send your TradingView trade executions directly to Discord with op
    - **📊 Include Symbol Info** - Show trading symbols in notifications
    - **📸 Include Screenshots** - Capture charts when trades execute
 
-### 4. Session Setup (Recommended)
+### 4. Setup (Recommended)
 
 For best results at the start of each browser session:
 
