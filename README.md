@@ -110,7 +110,7 @@ Clears the extension's memory of your current positions. Use this if:
 - **Server Permissions**: Confirm the webhook has permission to post in the channel
 
 ### Position Tracking Issues
-- Use **🔄 Reset Position Tracking** to clear incorrect position data
+- Use **🔄 Reset Position Tracking** to clear incorrect position data. Use this only when you have no open positions, as it resets the memory back to 0. It will not work correctly if positions are currently open.
 - The extension learns your positions from trade executions, not from TradingView's position display
 
 ## 🔧 Technical Details
@@ -124,7 +124,7 @@ Clears the extension's memory of your current positions. Use this if:
 - Position closes (partial, full, reversal)
 
 ### Position Detection
-The extension intelligently tracks position changes by:
+The extension tracks position changes by:
 - Monitoring trade executions and their quantities
 - Detecting when trades close existing positions vs. opening new ones
 - Identifying partial closes, full exits, and position reversals
@@ -132,7 +132,6 @@ The extension intelligently tracks position changes by:
 
 ### Screenshot Processing
 - Automatically crops TradingView UI elements (sidebars, headers, footers)
-- Optimizes image size for Discord's file limits
 - Falls back to text-only notifications if screenshot fails
 
 ### Privacy & Security
