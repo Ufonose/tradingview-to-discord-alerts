@@ -22,6 +22,6 @@ We do NOT collect any personal data. Specifically:
 - Your webhook URL stays in your browser only
 
 ## Contact
-For questions about this privacy policy, contact: [your-email@example.com]
+For questions about this privacy policy, contact: https://github.com/Ufonose/tradingview-to-discord-alerts/issues
 
-Last updated: [today's date]
+Last updated: September 19, 2025
