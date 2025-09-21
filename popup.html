@@ -128,6 +128,54 @@
             color: rgba(255, 255, 255, 0.4);
         }
         
+        .position-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .position-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .position-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .dropdown {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+        }
+        
+        .dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .dropdown option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+        
         .connection-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -163,6 +211,37 @@
         }
         
         .connection-feedback-item.show {
+            display: block;
+        }
+        
+        .position-feedback {
+            margin-top: 8px;
+        }
+        
+        .position-feedback-item {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: none;
+            animation: fadeInUp 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .position-feedback-item.success {
+            background: rgba(86, 171, 47, 0.2);
+            color: #a8e6cf;
+            border: 1px solid rgba(86, 171, 47, 0.3);
+        }
+        
+        .position-feedback-item.error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff9999;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .position-feedback-item.show {
             display: block;
         }
         
@@ -430,6 +509,30 @@
             background: linear-gradient(45deg, #5a4d88, #4a5bb8);
         }
         
+        .btn-position {
+            background: linear-gradient(45deg, #3a4ba8, #4a5bb8);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(58, 75, 168, 0.3);
+        }
+        
+        .btn-position:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(58, 75, 168, 0.4);
+            background: linear-gradient(45deg, #4a5bb8, #3a4ba8);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(45deg, #4a5bb8, #5a4d88);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(74, 91, 184, 0.3);
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 91, 184, 0.4);
+            background: linear-gradient(45deg, #5a4d88, #4a5bb8);
+        }
+        
         .status {
             margin-top: 10px;
             padding: 12px 16px;
@@ -619,7 +722,7 @@
                 <div class="connection-feedback-item" id="connectionFeedback"></div>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="section-title">
                 ⚙️ Notification Settings
@@ -678,8 +781,34 @@
                 🔄 Reset Position Tracking
             </button>
         </div>
-        
-        <div id="status" class="status" style="display: none;"></div>
+
+        <!-- Manual Position Input Section - Now at the very bottom -->
+        <div class="card" style="margin-top: 14px;">
+            <div class="section-title">
+                📊 Manual Position Input
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="symbolSelect">Select Symbol (execute a trade for symbols to appear)</label>
+                <select id="symbolSelect" class="dropdown">
+                    <option value="">Choose a symbol...</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="positionInput">Current Position</label>
+                <input type="number" id="positionInput" class="position-input" placeholder="Enter quantity (+ for long, - for short)" step="any" />
+            </div>
+            <div class="connection-actions">
+                <button class="btn btn-small btn-position" id="setPosition">
+                    📊 Set
+                </button>
+                <button class="btn btn-small btn-delete" id="deleteSymbol">
+                    🗑️ Remove
+                </button>
+            </div>
+            <div class="position-feedback">
+                <div class="position-feedback-item" id="positionFeedback"></div>
+            </div>
+        </div>
     </div>
     
     <!-- Help Modal -->
@@ -723,6 +852,11 @@
             <div class="help-section">
                 <div class="help-title">🔄 Reset Position Tracking</div>
                 <div class="help-desc">Clears the extension's memory of your current trading positions. Use this if the extension incorrectly thinks you have open positions when you don't, or if you want to start tracking fresh from a flat position.</div>
+            </div>
+
+            <div class="help-section">
+                <div class="help-title">📊 Manual Position Input</div>
+                <div class="help-desc">Set your current position for specific symbols when switching browsers or computers. This feature solves the cross-device synchronization issue.<br><br><strong>How to use:</strong><br>1. Select a symbol from the dropdown (populated from previous trades)<br>2. Enter your current position (positive numbers for long positions, negative for short positions, 0 for flat)<br>3. Click "📊 Set" to apply the position<br><br><strong>Symbol Management:</strong><br>• Only symbols you've previously traded will appear in the dropdown<br>• Use "🗑️ Remove" to delete old symbols you no longer trade<br>• Symbols persist across browser sessions and resets<br><br><strong>Use cases:</strong><br>• When switching to a new browser/computer<br>• After manually closing positions outside TradingView<br>• To correct incorrect position tracking</div>
             </div>
         </div>
     </div>
