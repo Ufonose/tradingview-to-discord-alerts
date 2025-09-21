@@ -4,6 +4,7 @@ let isMonitoring = false;
 let settings = {};
 let notificationData = {};
 let symbolPositions = {}; // Track positions per symbol
+let tradedSymbols = []; // Track all symbols that have been traded
 let lastStopLossPrice = null;
 let lastTakeProfitPrice = null;
 
@@ -18,6 +19,7 @@ chrome.storage.sync.get(['webhookUrl', 'enableNotifications', 'enableScreenshots
     
     console.log('Settings loaded:', settings);
     loadPositionData();
+    loadTradedSymbols();
     startNotificationMonitoring();
 });
 
@@ -31,6 +33,16 @@ function loadPositionData() {
     });
 }
 
+// Load traded symbols from storage
+function loadTradedSymbols() {
+    chrome.storage.sync.get(['tradedSymbols'], function(result) {
+        if (result.tradedSymbols) {
+            tradedSymbols = result.tradedSymbols;
+            console.log('Loaded traded symbols:', tradedSymbols);
+        }
+    });
+}
+
 // Save position data to storage
 function savePositionData() {
     chrome.storage.sync.set({
@@ -38,6 +50,23 @@ function savePositionData() {
     }, function() {
         console.log('Position data saved:', symbolPositions);
     });
+}
+
+// Save traded symbols to storage
+function saveTradedSymbols() {
+    chrome.storage.sync.set({
+        tradedSymbols: tradedSymbols
+    }, function() {
+        console.log('Traded symbols saved:', tradedSymbols);
+    });
+}
+
+// Add symbol to traded symbols list
+function addTradedSymbol(symbol) {
+    if (symbol && !tradedSymbols.includes(symbol)) {
+        tradedSymbols.push(symbol);
+        saveTradedSymbols();
+    }
 }
 
 // Listen for settings changes
@@ -58,17 +87,49 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         if (changes.symbolPositions) {
             symbolPositions = changes.symbolPositions.newValue || {};
         }
+        if (changes.tradedSymbols) {
+            tradedSymbols = changes.tradedSymbols.newValue || [];
+        }
     }
 });
 
-// Listen for reset command from popup
+// Listen for messages from popup
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === 'resetPosition') {
-        symbolPositions = {};
+        symbolPositions = {}; // Clear positions but keep traded symbols
         lastStopLossPrice = null;
         lastTakeProfitPrice = null;
         savePositionData();
+        // Note: We don't clear tradedSymbols here anymore - they stay saved
         sendResponse({success: true});
+    } else if (request.action === 'updatePosition') {
+        // Handle manual position updates from popup
+        if (request.symbol && typeof request.position === 'number') {
+            if (request.position === 0) {
+                delete symbolPositions[request.symbol];
+            } else {
+                symbolPositions[request.symbol] = request.position;
+            }
+            savePositionData();
+            console.log(`Position manually updated for ${request.symbol}: ${request.position}`);
+            sendResponse({success: true});
+        } else {
+            sendResponse({success: false, error: 'Invalid position data'});
+        }
+    } else if (request.action === 'deleteSymbol') {
+        // Handle symbol deletion from popup
+        if (request.symbol) {
+            // Remove from both position tracking and traded symbols
+            delete symbolPositions[request.symbol];
+            tradedSymbols = tradedSymbols.filter(symbol => symbol !== request.symbol);
+            
+            savePositionData();
+            saveTradedSymbols();
+            console.log(`Symbol deleted: ${request.symbol}`);
+            sendResponse({success: true});
+        } else {
+            sendResponse({success: false, error: 'No symbol specified'});
+        }
     }
 });
 
@@ -145,7 +206,7 @@ function parseNotification(element) {
     if (text.includes('executed') || text.includes('order placed') || text.includes('order cancelled') || text.includes('Limit order') || text.includes('Stop order')) {
         
         // Handle Stop order format
-        const stopOrderMatch = text.match(/Stop\s+order\s+(?:placed|modified|cancelled)\s+on\s+([A-Z_:0-9!]+?)(?:CloseBuy|CloseSell|\s|$).*?(?:(Buy|Sell)\s+)?([\d,]+)\s+at\s+([\d,]+\.?\d*)/i);
+        const stopOrderMatch = text.match(/Stop\s+order\s+(?:placed|modified|cancelled)\s+on\s+([A-Z_:0-9!.]+?)(?:CloseBuy|CloseSell|\s|$).*?(?:(Buy|Sell)\s+)?([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i);
         
         if (stopOrderMatch) {
             notificationData.symbol = stopOrderMatch[1];
@@ -180,7 +241,7 @@ function parseNotification(element) {
                 }
             } else {
                 // Handle legacy CloseBuy/CloseSell pattern
-                const closeBuyMatch = text.match(/(CloseBuy|CloseSell)\s+([\d,]+)\s+at\s+([\d,]+\.?\d*)/i);
+                const closeBuyMatch = text.match(/(CloseBuy|CloseSell)\s+([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i);
                 
                 if (closeBuyMatch) {
                     const closeSide = closeBuyMatch[1];
@@ -190,10 +251,10 @@ function parseNotification(element) {
                 } else {
                     // Standard Buy/Sell patterns
                     const standardPatterns = [
-                        /(Buy|Sell)\s+([\d,]+)\s+at\s+([\d,]+\.?\d*)/i,
-                        /Limit\s+order\s+(Buy|Sell)\s+([\d,]+)\s+at\s+([\d,]+\.?\d*)/i,
-                        /Market\s+order\s+(Buy|Sell)\s+([\d,]+)\s+at\s+([\d,]+\.?\d*)/i,
-                        /order\s+placed\s+.*?(Buy|Sell)\s+([\d,]+)\s+at\s+([\d,]+\.?\d*)/i
+                        /(Buy|Sell)\s+([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i,
+                        /Limit\s+order\s+(Buy|Sell)\s+([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i,
+                        /Market\s+order\s+(Buy|Sell)\s+([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i,
+                        /order\s+placed\s+.*?(Buy|Sell)\s+([\d,]+\.?\d*)\s+at\s+([\d,]+\.?\d*)/i
                     ];
                     
                     for (const pattern of standardPatterns) {
@@ -228,10 +289,15 @@ function parseNotification(element) {
     
     // Extract Symbol (if not already set)
     if (!notificationData.symbol) {
-        const symbolMatch = text.match(/on\s+([A-Z_:0-9!]+?)(?:CloseBuy|CloseSell|Buy|Sell|\s|$)/i);
+        const symbolMatch = text.match(/on\s+([A-Z_:0-9!.]+?)(?:CloseBuy|CloseSell|Buy|Sell|\s|$)/i);
         if (symbolMatch) {
             notificationData.symbol = symbolMatch[1];
         }
+    }
+    
+    // Add symbol to traded symbols list if we have a symbol
+    if (notificationData.symbol) {
+        addTradedSymbol(notificationData.symbol);
     }
     
     // Check for position changes if this is an executed trade
@@ -252,25 +318,46 @@ function checkForPositionClose() {
     const positionBefore = symbolPositions[symbol] || 0;
     const positionAfter = positionBefore + quantityChange;
     
+    // Fix floating point precision issues by rounding to 8 decimal places
+    const roundedPositionAfter = Math.round(positionAfter * 100000000) / 100000000;
+    
     if (positionBefore !== 0) {
         if (Math.sign(positionBefore) !== Math.sign(quantityChange)) {
             notificationData.isLikelyPositionClose = true;
             
-            if (positionAfter === 0) {
+            // Calculate partial percentage (always enabled)
+            const closedQuantity = Math.abs(quantityChange);
+            const originalQuantity = Math.abs(positionBefore);
+            const partialPercentage = Math.round((closedQuantity / originalQuantity) * 100);
+            notificationData.partialPercentage = partialPercentage;
+            
+            if (Math.abs(roundedPositionAfter) < 0.00000001) { // Essentially zero
                 notificationData.closeType = 'full';
-            } else if (Math.sign(positionAfter) === Math.sign(positionBefore)) {
+                symbolPositions[symbol] = 0; // Set to exactly 0
+            } else if (Math.sign(roundedPositionAfter) === Math.sign(positionBefore)) {
                 notificationData.closeType = 'partial';
+                symbolPositions[symbol] = roundedPositionAfter;
             } else {
                 notificationData.closeType = 'reversal';
+                symbolPositions[symbol] = roundedPositionAfter;
             }
         } else {
             notificationData.isAddingToPosition = true;
+            
+            // Calculate addition percentage (always enabled)
+            const addedQuantity = Math.abs(quantityChange);
+            const originalQuantity = Math.abs(positionBefore);
+            const additionPercentage = Math.round((addedQuantity / originalQuantity) * 100);
+            notificationData.additionPercentage = additionPercentage;
+            
+            symbolPositions[symbol] = roundedPositionAfter;
         }
+    } else {
+        symbolPositions[symbol] = roundedPositionAfter;
     }
     
-    symbolPositions[symbol] = positionAfter;
-    
-    if (symbolPositions[symbol] === 0) {
+    // Clean up positions that are essentially zero
+    if (symbolPositions[symbol] === 0 || Math.abs(symbolPositions[symbol]) < 0.00000001) {
         delete symbolPositions[symbol];
     }
     
@@ -496,6 +583,10 @@ function formatNotificationMessage(data) {
             if (data.isLikelyPositionClose) {
                 if (data.closeType === 'partial') {
                     actionType = '📉 Partial Close';
+                    // Add percentage (always enabled)
+                    if (data.partialPercentage) {
+                        actionType = `📉 Partial Close (${data.partialPercentage}%)`;
+                    }
                 } else if (data.closeType === 'full') {
                     actionType = '🚪 Position Closed';
                 } else if (data.closeType === 'reversal') {
@@ -503,6 +594,10 @@ function formatNotificationMessage(data) {
                 }
             } else if (data.isAddingToPosition) {
                 actionType = '🟩 Added to Position';
+                // Add percentage (always enabled)
+                if (data.additionPercentage) {
+                    actionType = `🟩 Added to Position (+${data.additionPercentage}%)`;
+                }
             } else {
                 actionType = '✅ Trade Executed';
             }
