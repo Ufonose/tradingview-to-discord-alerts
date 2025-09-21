@@ -91,7 +91,7 @@ Clears the extension's memory of your current positions. Use this if:
 **Solves cross-device synchronization issues** when switching browsers or computers.
 
 #### 🎯 Purpose
-When you switch browsers or computers, the extension loses memory of your current positions. Manual Position Input allows you to set your current positions so the extension can accurately track partial closes, full exits, and position reversals. At least one trade must be executed for the symbol to appear in the list
+When you switch browsers or computers, the extension loses memory of your current positions. Manual Position Input allows you to set your current positions so the extension can accurately track partial closes, full exits, and position reversals. At least one trade must be executed for the symbol to appear in the list.
 
 
 ## 🛠️ Troubleshooting
