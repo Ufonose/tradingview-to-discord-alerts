@@ -10,6 +10,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 - **⚙️ Customizable Settings** - Toggle notifications, symbol info, and screenshots on/off
 - **🎯 Multiple Order Types** - Supports market orders, limit orders, stop losses, take profits, and more
 - **🔄 Position Management** - Reset position tracking when needed
+- **📊 Manual Position Input** - Set positions manually for cross-device synchronization
 - **🧪 Test Integration** - Built-in webhook testing to verify your setup
 
 ## 🚀 Quick Start
@@ -18,7 +19,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 
 **🌐 Browser Compatibility**: Works with Chromium-based browsers.
 
-1. [Download](https://github.com/Ufonose/tradingview-to-discord-alerts/releases/tag/v0.1) & Extract the ZIP file
+1. [Download](https://github.com/Ufonose/tradingview-to-discord-alerts/releases/tag/v0.2) & Extract the ZIP file
 2. Open your browser and go to the extensions page:
    - **Chrome**: `chrome://extensions/`
    - **Brave**: `brave://extensions/`
@@ -86,6 +87,13 @@ Clears the extension's memory of your current positions. Use this if:
 - The extension incorrectly thinks you have open positions
 - You want to start tracking fresh from a flat position
 
+### 📊 Manual Position Input
+**Solves cross-device synchronization issues** when switching browsers or computers.
+
+#### 🎯 Purpose
+When you switch browsers or computers, the extension loses memory of your current positions. Manual Position Input allows you to set your current positions so the extension can accurately track partial closes, full exits, and position reversals. At least one trade must be executed for the symbol to appear in the list
+
+
 ## 🛠️ Troubleshooting
 
 ### No Notifications Appearing
@@ -107,6 +115,7 @@ Clears the extension's memory of your current positions. Use this if:
 ### Position Tracking Issues
 - Use **🔄 Reset Position Tracking** to clear incorrect position data. Use this only when you have no open positions, as it resets the memory back to 0. It will not work correctly if positions are currently open.
 - The extension learns your positions from trade executions, not from TradingView's position display
+- Use **📊 Manual Position Input** when switching devices or when positions get out of sync
 
 ## 🔧 Technical Details
 
