@@ -58,22 +58,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // NEW: Load symbols dropdown and position functionality
+    // Auto-save time toggle
+    document.getElementById('includeTime').addEventListener('change', function() {
+        const includeTime = this.checked;
+        
+        chrome.storage.sync.set({
+            includeTime: includeTime
+        }, function() {
+            const status = includeTime ? 'enabled' : 'disabled';
+            showInlineFeedback('timeFeedback', `Time display ${status}!`);
+        });
+    });
+    
+    // Load symbols dropdown and position functionality
     loadSymbolsDropdown();
     
-    // NEW: Set position button
+    // Set position button
     const setPositionBtn = document.getElementById('setPosition');
     if (setPositionBtn) {
         setPositionBtn.addEventListener('click', setManualPosition);
     }
     
-    // NEW: Delete symbol button
+    // Delete symbol button
     const deleteSymbolBtn = document.getElementById('deleteSymbol');
     if (deleteSymbolBtn) {
         deleteSymbolBtn.addEventListener('click', deleteSelectedSymbol);
     }
     
-    // NEW: Update position input when symbol selection changes
+    // Update position input when symbol selection changes
     const symbolSelect = document.getElementById('symbolSelect');
     if (symbolSelect) {
         symbolSelect.addEventListener('change', function() {
@@ -91,11 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadSettings() {
-    chrome.storage.sync.get(['webhookUrl', 'enableNotifications', 'enableScreenshots', 'includeSymbol'], function(result) {
+    // Added includeTime to the settings to load
+    chrome.storage.sync.get(['webhookUrl', 'enableNotifications', 'enableScreenshots', 'includeSymbol', 'includeTime'], function(result) {
         document.getElementById('webhookUrl').value = result.webhookUrl || '';
         document.getElementById('enableNotifications').checked = result.enableNotifications !== false;
-        document.getElementById('includeSymbol').checked = result.includeSymbol === true;
-        document.getElementById('enableScreenshots').checked = result.enableScreenshots === true;
+        document.getElementById('includeSymbol').checked = result.includeSymbol !== false; // Default to true
+        document.getElementById('enableScreenshots').checked = result.enableScreenshots === true; // Default to false
+        document.getElementById('includeTime').checked = result.includeTime !== false; // Default to true
     });
 }
 
@@ -157,9 +171,9 @@ function resetPosition() {
                 showResetFeedback('Please navigate to TradingView first, then try reset', 'error');
             } else if (response && response.success) {
                 showResetFeedback('Position tracking reset successfully!', 'success');
-                // NEW: Refresh the dropdown since positions were reset (but symbols are preserved)
+                // Refresh the dropdown since positions were reset (but symbols are preserved)
                 loadSymbolsDropdown();
-                // NEW: Clear the position input
+                // Clear the position input
                 const positionInput = document.getElementById('positionInput');
                 const symbolSelect = document.getElementById('symbolSelect');
                 if (positionInput) positionInput.value = '';
@@ -204,7 +218,7 @@ function showInlineFeedback(elementId, message) {
     }, 2000);
 }
 
-// NEW FUNCTIONS ONLY - Added for manual position input
+// Functions for manual position input
 function loadSymbolsDropdown() {
     const symbolSelect = document.getElementById('symbolSelect');
     if (!symbolSelect) return;
@@ -342,7 +356,6 @@ function showPositionFeedback(message, type) {
     }, 3000);
 }
 
-// NEW: Delete selected symbol from traded symbols list
 function deleteSelectedSymbol() {
     const symbolSelect = document.getElementById('symbolSelect');
     
