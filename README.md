@@ -7,7 +7,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 - **🔔 Real-time Notifications** - Automatically detects and forwards all TradingView trade details to Discord
 - **📊 Position Tracking** - Tracks your positions and identifies partial closes, full exits, and position reversals
 - **📸 Screenshot Capture** - Optionally capture and send TradingView chart screenshots when trades execute
-- **⚙️ Customizable Settings** - Toggle notifications, symbol info, and screenshots on/off
+- **⚙️ Customizable Settings** - Toggle notifications, symbol info, execution time, and screenshots on/off
 - **🎯 Multiple Order Types** - Supports market orders, limit orders, stop losses, take profits, and more
 - **🔄 Position Management** - Reset position tracking when needed
 - **📊 Manual Position Input** - Set positions manually for cross-device synchronization
@@ -44,6 +44,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 5. Configure your notification preferences:
    - **🔔 Discord Notifications** - Master on/off switch
    - **📊 Include Symbol Info** - Show trading symbols in notifications
+   - **🕐 Include Time** - Show execution time in New York timezone
    - **📸 Include Screenshots** - Capture charts when trades execute
 
 ### 4. Setup (Recommended)
@@ -71,6 +72,9 @@ Master switch for all trade alerts. When disabled, no notifications will be sent
 
 ### 📊 Include Symbol Info  
 Shows the trading symbol (AAPL, TSLA, EURUSD, etc.) in notifications. Helpful for identifying which asset the trade is for.
+
+### 🕐 Include Time
+Displays the execution time in New York timezone (Eastern Time) for all trade notifications. Time is shown in 24-hour format (HH:MM:SS) and automatically adjusts for daylight saving time.
 
 ### 📸 Include Screenshots
 Automatically captures TradingView chart screenshots when trades execute.
