@@ -758,6 +758,23 @@
                     </label>
                 </div>
                 
+                <!-- NEW: Time Setting moved to 3rd position -->
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-icon">🕐</div>
+                        <div class="setting-text">
+                            <div class="setting-title">Include Time</div>
+                            <div class="setting-desc">Show execution time (New York timezone)</div>
+                            <div class="setting-feedback" id="timeFeedback"></div>
+                        </div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="includeTime">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Screenshots moved to 4th position -->
                 <div class="setting-item">
                     <div class="setting-info">
                         <div class="setting-icon">📸</div>
@@ -841,7 +858,12 @@
             
             <div class="help-section">
                 <div class="help-title">📊 Include Symbol Info</div>
-                <div class="help-desc">When enabled, the trading symbol (like AAPL, TSLA, EURUSD, etc.) will be included in your Discord notifications. This helps you quickly identify which asset the trade notification is for. This setting auto-saves when toggled.</div>
+                <div class="help-desc">When enabled, the trading symbol (like AAPL, TSLA, EURUSD, etc.) will be included in your Discord notifications. This helps you quickly identify which asset the trade notification is for. This setting is enabled by default and auto-saves when toggled.</div>
+            </div>
+            
+            <div class="help-section">
+                <div class="help-title">🕐 Include Time</div>
+                <div class="help-desc">Shows the execution time in New York timezone (Eastern Time) for all trade notifications. The time is displayed in 24-hour format (HH:MM:SS) and automatically adjusts for daylight saving time. This setting is enabled by default and auto-saves when toggled.</div>
             </div>
             
             <div class="help-section">
