@@ -9,12 +9,13 @@ let lastStopLossPrice = null;
 let lastTakeProfitPrice = null;
 
 // Load settings and position data, then start monitoring
-chrome.storage.sync.get(['webhookUrl', 'enableNotifications', 'enableScreenshots', 'includeSymbol'], function(result) {
+chrome.storage.sync.get(['webhookUrl', 'enableNotifications', 'enableScreenshots', 'includeSymbol', 'includeTime'], function(result) {
     settings = {
         webhookUrl: result.webhookUrl || '',
         enableNotifications: result.enableNotifications !== false, // Default to true
         enableScreenshots: result.enableScreenshots === true, // Default to false
-        includeSymbol: result.includeSymbol === true // Default to false
+        includeSymbol: result.includeSymbol !== false, // Default to true
+        includeTime: result.includeTime !== false // Default to true
     };
     
     console.log('Settings loaded:', settings);
@@ -84,6 +85,9 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         if (changes.includeSymbol) {
             settings.includeSymbol = changes.includeSymbol.newValue === true;
         }
+        if (changes.includeTime) {
+            settings.includeTime = changes.includeTime.newValue === true;
+        }
         if (changes.symbolPositions) {
             symbolPositions = changes.symbolPositions.newValue || {};
         }
@@ -100,7 +104,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         lastStopLossPrice = null;
         lastTakeProfitPrice = null;
         savePositionData();
-        // Note: We don't clear tradedSymbols here anymore - they stay saved
+        // Don't clear tradedSymbols - they stay saved
         sendResponse({success: true});
     } else if (request.action === 'updatePosition') {
         // Handle manual position updates from popup
@@ -201,6 +205,9 @@ function parseNotification(element) {
     notificationData.isLikelyPositionClose = false;
     notificationData.closeType = null;
     notificationData.isAddingToPosition = false;
+    
+    // Capture the current time when notification is detected
+    notificationData.timestamp = new Date();
     
     // Extract basic trade info
     if (text.includes('executed') || text.includes('order placed') || text.includes('order cancelled') || text.includes('Limit order') || text.includes('Stop order')) {
@@ -510,13 +517,15 @@ async function cropScreenshotForTradingView(dataUrl) {
 function sendRegularMessageWithTabNote(message) {
     // Add a note about needing an active TradingView tab
     const messageWithNote = message + "\n\n📸 *Screenshot was enabled but requires an active open TradingView tab to work.*";
+    // Add invisible separator for spacing
+    const messageWithSpacing = messageWithNote + '\u200B';
     
     fetch(settings.webhookUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: messageWithNote })
+        body: JSON.stringify({ content: messageWithSpacing })
     })
     .catch(error => {
         console.error('Error sending notification with tab note:', error);
@@ -526,13 +535,15 @@ function sendRegularMessageWithTabNote(message) {
 function sendRegularMessageWithScreenshotNote(message) {
     // Add a note about screenshots requiring user interaction
     const messageWithNote = message + "\n\n📸 *Screenshot was enabled but requires opening the extension settings once to activate.*";
+    // Add invisible separator for spacing
+    const messageWithSpacing = messageWithNote + '\u200B';
     
     fetch(settings.webhookUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: messageWithNote })
+        body: JSON.stringify({ content: messageWithSpacing })
     })
     .catch(error => {
         console.error('Error sending notification with screenshot note:', error);
@@ -540,16 +551,46 @@ function sendRegularMessageWithScreenshotNote(message) {
 }
 
 function sendRegularMessage(message) {
+    // Add invisible separator for spacing when sending regular text messages
+    const messageWithSpacing = message + '\u200B';
+    
     fetch(settings.webhookUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content: message })
+        body: JSON.stringify({ content: messageWithSpacing })
     })
     .catch(error => {
         console.error('Error sending notification:', error);
     });
+}
+
+// Function to format time in New York timezone
+function formatNewYorkTime(date) {
+    if (!date || !(date instanceof Date)) return '';
+    
+    try {
+        // Format time in New York timezone (Eastern Time)
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false // Use 24-hour format
+        });
+        
+        return formatter.format(date);
+    } catch (error) {
+        console.error('Error formatting New York time:', error);
+        // Fallback to local time if timezone formatting fails
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+    }
 }
 
 function formatNotificationMessage(data) {
@@ -608,11 +649,22 @@ function formatNotificationMessage(data) {
         }
     }
     
-    let message = `**${actionType}**\n\n`;
+    // Start with code block
+    let message = `\`\`\`\n${actionType}`;
+    
+    // Add time right after action type if enabled
+    if (settings.includeTime && data.timestamp) {
+        const nyTime = formatNewYorkTime(data.timestamp);
+        if (nyTime) {
+            message += ` - ${nyTime}`;
+        }
+    }
+    
+    message += `\n\n`;
     
     // Add symbol if enabled and available
     if (settings.includeSymbol && data.symbol) {
-        message += `**Symbol:** ${data.symbol}\n`;
+        message += `Symbol: ${data.symbol}\n`;
     }
     
     // Add direction for relevant alerts
@@ -627,7 +679,7 @@ function formatNotificationMessage(data) {
         ];
         
         if (!skipDirectionTypes.includes(actionType)) {
-            message += `**Direction:** ${data.side}\n`;
+            message += `Direction: ${data.side}\n`;
         }
     }
     
@@ -666,20 +718,20 @@ function formatNotificationMessage(data) {
                     }
                 }
             }
-            message += `**${priceLabel}:** ${formatExactPrice(data.entry)}\n`;
+            message += `${priceLabel}: ${formatExactPrice(data.entry)}\n`;
         }
     }
     
     if (data.takeProfit) {
-        message += `**Take Profit:** ${formatExactPrice(data.takeProfit)}\n`;
+        message += `Take Profit: ${formatExactPrice(data.takeProfit)}\n`;
     }
     
     if (data.stopLoss) {
-        message += `**Stop Loss:** ${formatExactPrice(data.stopLoss)}\n`;
+        message += `Stop Loss: ${formatExactPrice(data.stopLoss)}\n`;
     }
     
-    // Add invisible separator for spacing
-    message += '\u200B';
+    // Close code block (don't add invisible space here anymore)
+    message += `\`\`\``;
     
     return message;
 }
