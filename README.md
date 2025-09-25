@@ -19,7 +19,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 
 **🌐 Browser Compatibility**: Works with Chromium-based browsers.
 
-1. [Download](https://github.com/Ufonose/tradingview-to-discord-alerts/releases/tag/v0.2) & Extract the ZIP file
+1. [Download](https://github.com/Ufonose/tradingview-to-discord-alerts/releases/tag/v0.3) & Extract the ZIP file
 2. Open your browser and go to the extensions page:
    - **Chrome**: `chrome://extensions/`
    - **Brave**: `brave://extensions/`
