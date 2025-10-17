@@ -19,6 +19,7 @@ Automatically send your TradingView trade executions directly to Discord with op
 
 **🌐 Browser Compatibility**: Works with Chromium-based browsers.
 
+Option a:
 1. [Download](https://github.com/Ufonose/tradingview-to-discord-alerts/releases/tag/v0.3) & Extract the ZIP file
 2. Open your browser and go to the extensions page:
    - **Chrome**: `chrome://extensions/`
@@ -27,6 +28,9 @@ Automatically send your TradingView trade executions directly to Discord with op
 4. Click "Load unpacked" and select the **extracted folder containing the files**
 5. The extension should be added to your browser's extension list
 6. **📌 Recommended**: Pin the extension to your toolbar for easy access to settings
+
+Option b:
+1. [Download](https://chromewebstore.google.com/detail/tradingview-to-discord/jhidncpcpehgdgkijknclaldmgcedmdl) from the Chrome Web Store
 
 ### 2. Set Up Discord Webhook
 
