@@ -108,6 +108,7 @@ When you switch browsers or computers, the extension loses memory of your curren
 1. **Verify Webhook**: Use the **🧪 Test** button to confirm Discord connection
 2. **Check Settings**: Ensure **🔔 Discord Notifications** is enabled
 3. **Reload Page**: Refresh TradingView after changing settings
+4. **Check TradingView Settings**: Settings -> Trading -> Disable "Show only rejection notifications"
 
 ### Screenshots Not Working
 1. **Active Tab**: TradingView must be the active browser tab
